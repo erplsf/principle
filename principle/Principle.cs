@@ -21,10 +21,10 @@ namespace Principle
         public static bool Available => PrincipiaWrapper.Ready;
 
         [KRPCProcedure(GameScene = GameScene.Flight)]
-        public static void GetOrCreateFlightPlan()
+        public static bool FlightPlanExists()
         {
             CheckAPI();
-            // PrincipiaWrapper.Principia;
+            return PrincipiaWrapper.FlightPlanExists(FlightGlobals.ActiveVessel.id);
         }
     }
 }

@@ -1,20 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine;
 
 namespace Principle
 {
     public class PrincipiaWrapper
     {
         private static object _principia = null;
+        private static object _adapter = null;
+        private static IntPtr _plugin = IntPtr.Zero;
         private static bool _ready = false;
 
         public static bool InitPrincipia()
         {
             try
             {
-                _principia = Get();
-                _ready = true;
+                _principia = Get("ExternalInterface", "Get");
+                _adapter = Reflection.GetFieldOrPropertyValue(_principia, "adapter_");
+                _plugin = Reflection.Call<IntPtr>(_adapter, "Plugin")();
+                if (_plugin != IntPtr.Zero)
+                {
+                    _ready = true;
+                }
             }
             catch (DllNotFoundException e)
             {
@@ -26,7 +34,7 @@ namespace Principle
         
         public static bool Ready => _ready;
 
-        public static object Principia => _principia;
+        public static object Plugin => _plugin;
 
         private static string AssemblyName() {
             foreach (var loadedAssembly in AssemblyLoader.loadedAssemblies) {
@@ -44,10 +52,16 @@ namespace Principle
         }
 
         // principia.ksp_plugin_adapter.ExternalInterface.Get().
-        private static object Get() {
-            return GetType("ExternalInterface")
-                .GetMethod("Get")
+        private static object Get(string typeName, string methodName) {
+            return GetType(typeName)
+                .GetMethod(methodName)
                 ?.Invoke(null, null);
+        }
+
+        public static bool FlightPlanExists(Guid vesselID)
+        {
+            Debug.Log(_plugin);
+            return false;
         }
     }
 
